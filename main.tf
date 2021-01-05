@@ -7,6 +7,8 @@
 resource "aws_db_instance" "database" {
   allocated_storage = 19
   auto_minor_version_upgrade = true
+  copy_tags_to_snapshot = true
+  delete_automated_backups = true
   engine = "mysql"
   engine_version = "5.7.31"
   identifier = "northwind"
@@ -16,7 +18,9 @@ resource "aws_db_instance" "database" {
   option_group_name = "default:mysql-5-7"
   parameter_group_name = "northwind"
   port = var.port
+  skip_final_snapshot = false
   publicly_accessible = true
+  multi_az = false
   storage_type = "gp2"
   tags = {
     "Org" = "ENTA"
