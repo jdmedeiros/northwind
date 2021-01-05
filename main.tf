@@ -98,7 +98,7 @@ resource "aws_instance" "mysqlcli" {
   user_data = <<-EOF
       #!/bin/bash
       apt-get update && apt-get -y upgrade && apt-get -y install mysql-client
-      wget --output-document northwind.sql https://gist.githubusercontent.com/jdmedeiros/db10e100bbfecc209f00b4bb8406bc7e/raw/93135d9290205c7cdb358b5b1f44175e4896dbb1/gistfile1.txt
+      wget --output-document northwind.sql https://raw.githubusercontent.com/jdmedeiros/northwind/main/Northwind.sql
       mysql -u ${var.user} -p${var.password} -h northwind.chiscfte01ei.us-east-1.rds.amazonaws.com < northwind.sql
       EOF
 
