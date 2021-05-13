@@ -16,5 +16,6 @@ output "username" {
 output "password" {
   description = "Password. "
   value = aws_db_instance.database.password
+  sensitive = true
 }
 
