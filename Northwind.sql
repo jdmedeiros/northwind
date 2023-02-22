@@ -4619,9 +4619,9 @@ select *
                   (select 1 + count(*)
                    from Employees b
                    where b.Title = a.Title
-                     and b.Salary > a.Salary) RANK
+                     and b.Salary > a.Salary) THERANK
            from Employees as a) as x
-     order by x.Title, x.RANK;
+     order by x.Title, x.THERANK;
 
 END $$
 
