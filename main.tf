@@ -10,12 +10,12 @@ resource "aws_db_instance" "database" {
   copy_tags_to_snapshot = true
   delete_automated_backups = true
   engine = "mysql"
-  engine_version = "5.7.31"
+  engine_version = "8.0.35"
   identifier = "northwind"
-  instance_class = "db.t2.micro"
+  instance_class = "db.t3.micro"
   iops = 0
   max_allocated_storage = 20
-  option_group_name = "default:mysql-5-7"
+  option_group_name = "default:mysql-8-0"
   parameter_group_name = "northwind"
   port = var.port
   skip_final_snapshot = false
@@ -26,7 +26,7 @@ resource "aws_db_instance" "database" {
     "Org" = "ENTA"
   }
   username = "admin"
-  password = "Passw0rd#SuperSecreta"
+  password = var.password
   vpc_security_group_ids = [
     aws_security_group.db-security-group.id,
   ]
@@ -79,7 +79,7 @@ resource "aws_security_group" "db-security-group" {
 # aws_db_parameter_group.northwind:
 resource "aws_db_parameter_group" "northwind" {
   description = "Parameter group for the Northwind database"
-  family = "mysql5.7"
+  family = "default.mysql8.0"
   name = "northwind"
   tags = {}
 
@@ -91,8 +91,8 @@ resource "aws_db_parameter_group" "northwind" {
 }
 
 resource "aws_instance" "mysqlcli" {
-  ami = "ami-0885b1f6bd170450c"
-  instance_type = "t2.micro"
+  ami = "ami-04b70fa74e45c3917"
+  instance_type = "t3.micro"
   security_groups = [
     "mysqlcli-security-group",
   ]
@@ -103,7 +103,8 @@ resource "aws_instance" "mysqlcli" {
       #!/bin/bash
       apt-get update && apt-get -y upgrade && apt-get -y install mysql-client
       wget --output-document northwind.sql https://raw.githubusercontent.com/jdmedeiros/northwind/main/Northwind.sql
-      mysql -u ${var.user} -p${var.password} -h northwind.chiscfte01ei.us-east-1.rds.amazonaws.com < northwind.sql
+      mysql -u ${var.user} -p${var.password} -h ${aws_db_instance.database.endpoint} < northwind.sql
+
       EOF
 
   depends_on = [
