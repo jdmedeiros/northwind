@@ -73,43 +73,25 @@ resource "aws_db_parameter_group" "northwind" {
   }
 }
 
-resource "aws_instance" "mysqlcli" {
-  ami             = "ami-04b70fa74e45c3917"
-  instance_type   = "t3.micro"
-  security_groups = [aws_security_group.mysqlcli.name]
-  key_name        = var.key_name
+resource "null_resource" "import_db" {
+  provisioner "local-exec" {
+    command = <<EOT
+      #!/bin/bash
+      DB_ENDPOINT="${aws_db_instance.database.endpoint}"
+      DB_NAME="Northwind"
+      DB_USER="${var.user}"
+      DB_PASSWORD="${var.password}"
+      SQL_FILE_URL="https://raw.githubusercontent.com/jdmedeiros/northwind/main/Northwind.sql"
 
-  user_data = <<-EOF
-    #!/bin/bash
-    apt-get update && apt-get -y upgrade && apt-get -y install mysql-client
-    wget --output-document northwind.sql https://raw.githubusercontent.com/jdmedeiros/northwind/main/Northwind.sql
-    mysql -u ${var.user} -p${var.password} -h ${aws_db_instance.database.endpoint} < northwind.sql
-  EOF
+      # Download the SQL file
+      wget --output-document northwind.sql $SQL_FILE_URL
+
+      # Import the SQL file into the RDS instance
+      mysql -h $DB_ENDPOINT -P 3306 -u $DB_USER -p$DB_PASSWORD $DB_NAME < northwind.sql
+    EOT
+  }
 
   depends_on = [
     aws_db_instance.database
   ]
-}
-
-resource "aws_security_group" "mysqlcli" {
-  name        = "mysqlcli-security-group"
-  description = "MySQL Client Security Group"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.ip_list
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    "Name" = "mysqlcli-security-group"
-  }
 }
